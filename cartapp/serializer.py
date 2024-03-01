@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Cartitems
 from productapp.serializer import ProductSerializer
 from cartapp.models import *
-from authentication.models import User
+from django.contrib.auth.models import User
 
 
 class SimpleProductSerializer(serializers.ModelSerializer):

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from productapp.serializer import *
 from cartapp.models import *
-from authentication.models import User
+from django.contrib.auth.models import User
 from .models import Order, OrderedProduct
 from django.db import transaction
 from django.contrib.auth import get_user_model
@@ -43,6 +43,7 @@ class UpdateStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['status']
+
 
 
 

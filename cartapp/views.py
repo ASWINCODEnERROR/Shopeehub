@@ -11,7 +11,7 @@ from productapp.models import Product
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
-from authentication.models import User
+from django.contrib.auth.models import User
 
 
 class ApiCart(APIView):

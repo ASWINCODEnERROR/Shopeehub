@@ -2,7 +2,7 @@ from django.db import models
 import uuid
 from  django.conf import settings
 from productapp.models import *
-from authentication.models import User
+from django.contrib.auth.models import User
 
 
 class Order(models.Model):

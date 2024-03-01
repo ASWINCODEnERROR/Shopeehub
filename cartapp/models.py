@@ -4,7 +4,7 @@ from  django.conf import settings
 from productapp.models import *
 from authentication.models import *
 from productapp.models import Product
-from authentication.models import User
+# from authentication.models import User
 # Create your models here.
 
 
