@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from productapp.models import Product ,Category,Product, ProductImage,ProductVariant,Review
-from authentication.models import User
+from productapp.models import Product ,Category,Product, ProductImage,ProductVariant,Review,Rating
+from orders.models import Order
+from django.contrib.auth.models import User
 
 
    
@@ -71,3 +72,16 @@ class ReviewSerializer(serializers.ModelSerializer):
         return review
 
 
+
+class RatingSerializer(serializers.ModelSerializer):
+    product_id = serializers.UUIDField(write_only=True)
+    
+    class Meta:
+        model = Rating
+        fields = ['product_id', 'rating']
+        
+    def validate_product_id(self, value):
+        request = self.context.get("request")
+        if not Order.objects.filter(user=request.user, ordered_products__product__id=value, status="completed").exists():
+            raise serializers.ValidationError("You must complete an order for this product to rate it")
+        return value

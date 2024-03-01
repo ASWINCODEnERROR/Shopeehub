@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-from .views import ApiProduct, ApiCategories, MultipImageUpload, ReviewListCreateAPIView, ReviewRetrieveUpdateDestroyAPIView
+from .views import ApiProduct, ApiCategories, MultipImageUpload, ReviewListCreateAPIView, ReviewRetrieveUpdateDestroyAPIView,RatingAPIView
 
 
 urlpatterns = [
@@ -21,8 +21,8 @@ urlpatterns = [
 
     path('reviews/', ReviewListCreateAPIView.as_view(), name='review-list-create'),
     path('reviews/<int:pk>/', ReviewRetrieveUpdateDestroyAPIView.as_view(), name='review-retrieve-update-destroy'),
-    # path('reviews/', ApiReview.as_view(), name='review-list'),
-    # path('reviews/<int:pk>/', ApiReview.as_view(), name='review-detail'),
+    path('ratings/', RatingAPIView.as_view(), name='ratings-list-create'),
+    path('ratings/<int:pk>/', RatingAPIView.as_view(), name='rating-detail'),
 
 ]
   

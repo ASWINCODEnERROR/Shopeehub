@@ -1,6 +1,8 @@
 from django.db import models
 import uuid
 from  django.conf import settings
+from django.db.models import Avg
+from django.contrib.auth.models import User
 
 
 # Create your models here.
@@ -87,3 +89,26 @@ class Review(models.Model):
     
     def __str__(self):
         return self.description
+    
+    
+
+class Rating(models.Model):
+    product = models.ForeignKey(Product,on_delete=models.CASCADE,related_name = 'rating')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField(choices=((1,'1 star'),(2,'2 star'),(3,'3 star'),(4,'4 star'),(5,'5 star')))
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('product','user')
+        
+    @property
+    def average_rating(self):
+        return self.product.ratings.aggregate(Avg('rating'))['rating__avg']
+
+    @property
+    def total_ratings(self):
+        return self.product.ratings.count()
+
+    def __str__(self):
+        return f"Rating for {self.product.name} by {self.user.username}"

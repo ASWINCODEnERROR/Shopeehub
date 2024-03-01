@@ -4,21 +4,22 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .filters import ProductFilter
 from rest_framework.decorators import api_view
-from productapp.serializer import ProductSerializer,CategorySerializer,ReviewSerializer
+from productapp.serializer import ProductSerializer,CategorySerializer,ReviewSerializer,RatingSerializer
 from .models import *
+from orders.models import Order, OrderedProduct 
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status
+from rest_framework import status,generics
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet,GenericViewSet
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.filters import SearchFilter,OrderingFilter
 from rest_framework.pagination import PageNumberPagination
-# from authentication.models import User
+from django.db.models import Avg,Count
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAdminUser, IsAuthenticated,BasePermission
-
+from rest_framework.exceptions import ValidationError
 
 
 
@@ -42,8 +43,6 @@ class CustomPagination(PageNumberPagination):
     max_page_size = 100  
 
 # product session=====================================
-
-
 class ApiProduct(APIView):
     permission_classes = [IsAuthenticated]  
 
@@ -163,11 +162,6 @@ class ApiCategories(APIView):
 
 
 
-
-# =================================================================================================
-
-
-
 class ReviewListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated] 
     def get(self, request):
@@ -209,6 +203,92 @@ class ReviewRetrieveUpdateDestroyAPIView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Review.DoesNotExist:
             return Response({"error": "Review not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+# for rating=============
+
+# class RatingAPIView(generics.CreateAPIView):
+#     queryset = Rating.objects.all()
+#     serializer_class = RatingSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+
+#         product_id = serializer.validated_data.get('product_id')
+
+#         if not Order.objects.filter(user=request.user,  status="completed").exists():
+#             OrderPrdouc.fi(order__id = orderId)
+            
+#             return Response({"error": "You must complete an order for this product to rate it"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         serializer.save(user=request.user)
+
+#         total_users_rated = Rating.objects.filter(product_id=product_id).values('user').distinct().count()
+
+#         average_rating = Rating.objects.filter(product_id=product_id).aggregate(Avg('rating'))['rating__avg']
+
+#         response_data = serializer.data
+#         response_data['total_users_rated'] = total_users_rated
+#         response_data['average_rating'] = average_rating
+
+#         return Response(response_data, status=status.HTTP_201_CREATED)
+
+
+
+class RatingAPIView(generics.CreateAPIView):
+    queryset = Rating.objects.all()
+    serializer_class = RatingSerializer
+    permission_classes = [IsAuthenticated]
+    print("88888888888888888")
+
+    def post(self, request, *args, **kwargs):
+      
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        print("******************************")
+        product_id = serializer.validated_data.get('product_id')
+        print("product_id================================================================", product_id)
+
+        if not Order.objects.filter(user=request.user, status="completed", ordered_products__product_id=product_id).exists():
+            print("*****************************",status)
+            return Response({"error": "You must complete an order for this product to rate it"}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save(user=request.user)
+
+        ordered_product = OrderedProduct.objects.filter(order__user=request.user, order__status="completed", product_id=product_id).first()
+        if ordered_product:
+            product_id = ordered_product.product_id
+        else:
+            return Response({"error": "The ordered product is not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        total_users_rated = Rating.objects.filter(product_id=product_id).values('user').distinct().count()
+        average_rating = Rating.objects.filter(product_id=product_id).aggregate(Avg('rating'))['rating__avg']
+
+        response_data = serializer.data
+        response_data['total_users_rated'] = total_users_rated
+        response_data['average_rating'] = average_rating
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # def product_detail_with_reviews(request, product_id):
 #     product = get_object_or_404(Product, id=product_id)

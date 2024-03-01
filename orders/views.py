@@ -6,7 +6,7 @@ from .models import Order , OrderedProduct
 from orders.serializer import OrderSerializer,OrderedProductSerializer,UpdateStatusSerializer
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
-from authentication.models import User
+from django.contrib.auth.models import User
 from django.db import transaction 
 from rest_framework.generics import UpdateAPIView
 from rest_framework import status
