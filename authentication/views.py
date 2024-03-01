@@ -8,6 +8,9 @@ from .serializer import ChangePasswordSerializer, UserSerializer
 from authentication.models import User
 from rest_framework.decorators import api_view ,permission_classes
 from rest_framework.permissions import IsAuthenticated
+from utils.message import MESSAGE_ERROR, MESSAGE_SUCCESS
+
+
 
 
 class RegisterView(APIView):
@@ -42,12 +45,12 @@ class LoginView(APIView):
         if user:
             refresh = RefreshToken.for_user(user)
             return Response({
-                'message': 'Login successful',
+                'message': 'Login'+ MESSAGE_SUCCESS,
                 'code': status.HTTP_200_OK,
                 'access_token': str(refresh.access_token),
                 'role': user.role 
             })
-        return Response({'message': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': MESSAGE_ERROR }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
