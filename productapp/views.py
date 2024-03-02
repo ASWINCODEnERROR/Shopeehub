@@ -6,6 +6,7 @@ from .filters import ProductFilter
 from rest_framework.decorators import api_view
 from productapp.serializer import ProductSerializer,CategorySerializer,ReviewSerializer,RatingSerializer
 from .models import *
+from django.db.utils import IntegrityError
 from orders.models import Order, OrderedProduct 
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -209,61 +210,24 @@ class ReviewRetrieveUpdateDestroyAPIView(APIView):
 
 # for rating=============
 
-# class RatingAPIView(generics.CreateAPIView):
-#     queryset = Rating.objects.all()
-#     serializer_class = RatingSerializer
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-
-#         product_id = serializer.validated_data.get('product_id')
-
-#         if not Order.objects.filter(user=request.user,  status="completed").exists():
-#             OrderPrdouc.fi(order__id = orderId)
-            
-#             return Response({"error": "You must complete an order for this product to rate it"}, status=status.HTTP_400_BAD_REQUEST)
-
-#         serializer.save(user=request.user)
-
-#         total_users_rated = Rating.objects.filter(product_id=product_id).values('user').distinct().count()
-
-#         average_rating = Rating.objects.filter(product_id=product_id).aggregate(Avg('rating'))['rating__avg']
-
-#         response_data = serializer.data
-#         response_data['total_users_rated'] = total_users_rated
-#         response_data['average_rating'] = average_rating
-
-#         return Response(response_data, status=status.HTTP_201_CREATED)
-
-
-
 class RatingAPIView(generics.CreateAPIView):
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
     permission_classes = [IsAuthenticated]
-    print("88888888888888888")
 
     def post(self, request, *args, **kwargs):
-      
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        print("******************************")
+        
         product_id = serializer.validated_data.get('product_id')
-        print("product_id================================================================", product_id)
 
         if not Order.objects.filter(user=request.user, status="completed", ordered_products__product_id=product_id).exists():
-            print("*****************************",status)
-            return Response({"error": "You must complete an order for this product to rate it"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "You must complete an order for this product to rate it","code": status.HTTP_400_BAD_REQUEST})
 
-        serializer.save(user=request.user)
-
-        ordered_product = OrderedProduct.objects.filter(order__user=request.user, order__status="completed", product_id=product_id).first()
-        if ordered_product:
-            product_id = ordered_product.product_id
-        else:
-            return Response({"error": "The ordered product is not found"}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            serializer.save(user=request.user)
+        except IntegrityError:
+            return Response({"error": "You have already rated this product","code": status.HTTP_400_BAD_REQUEST})
 
         total_users_rated = Rating.objects.filter(product_id=product_id).values('user').distinct().count()
         average_rating = Rating.objects.filter(product_id=product_id).aggregate(Avg('rating'))['rating__avg']
@@ -272,7 +236,7 @@ class RatingAPIView(generics.CreateAPIView):
         response_data['total_users_rated'] = total_users_rated
         response_data['average_rating'] = average_rating
 
-        return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response({"message": "Rating successful","code": status.HTTP_201_CREATED,"data": response_data})
 
 
 
@@ -281,54 +245,6 @@ class RatingAPIView(generics.CreateAPIView):
 
 
 
-
-
-
-
-
-
-
-
-
-# def product_detail_with_reviews(request, product_id):
-#     product = get_object_or_404(Product, id=product_id)
-#     serializer = ProductSerializer(product)
-#     return JsonResponse(serializer.data)
-
-
-
-# Review=======================
-
-# class ApiReview(APIView):
-#     def get(self, request, format=None):
-#         reviews = Review.objects.all()
-#         serializer = ReviewSerializer(reviews, many=True)
-#         return Response(serializer.data)
-
-#     def post(self, request, format=None):
-#         serializer = ReviewSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#     def put(self, request, pk, format=None):
-#         review = self.get_object(pk)
-#         serializer = ReviewSerializer(review, data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#     def delete(self, request, pk, format=None):
-#         review = self.get_object(pk)
-#         review.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-#     def get_serializer_context(self):
-#         return {"product":self.kwargs["product"]}
 
 
 
