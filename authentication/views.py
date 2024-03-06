@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from rest_framework.decorators import api_view ,permission_classes
 from rest_framework.permissions import IsAuthenticated
 from utils.message import MESSAGE_ERROR, MESSAGE_SUCCESS
+from authentication.models import User
 
 
 
@@ -78,3 +79,4 @@ class ChangePasswordView(APIView):
             user.save()
             return Response({'message': 'Password changed successfully', 'code': status.HTTP_200_OK}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

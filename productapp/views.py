@@ -21,7 +21,7 @@ from django.db.models import Avg,Count
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAdminUser, IsAuthenticated,BasePermission
 from rest_framework.exceptions import ValidationError
-
+from rest_framework.pagination import PageNumberPagination
 
 
 
@@ -38,7 +38,7 @@ class IsAdminOrSuperAdmin(BasePermission):
 
 # for paginaation purposes==========================
 class CustomPagination(PageNumberPagination):
-    page_size = 4
+    page_size = 10
     page_query_param = 'page' 
     page_size_query_param = 'limit'
     max_page_size = 100  
@@ -129,38 +129,47 @@ class MultipImageUpload(APIView):
 
 
 # for categories
+class CustomCategoryPagination(PageNumberPagination):
+    page_size = 10
+    page_query_param = 'page'
+    page_size_query_param = 10
+    
+ 
 class ApiCategories(APIView):
+    pagination_class = CustomCategoryPagination
+    permission_classes = [IsAuthenticated]  
+
+    def get_permissions(self):
+        if self.request.method in ['POST', 'PUT', 'DELETE']:
+            return [IsAdminOrSuperAdmin()]
+        return super().get_permissions()
+
     def get(self, request):
         categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data)
+        paginator = self.pagination_class()
+        result_page = paginator.paginate_queryset(categories, request)
+        serializer = CategorySerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         serializer = CategorySerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
-        categories = Category.objects.filter(category_id=pk)
-        if categories.exists():
-            category = categories.first()
-            serializer = CategorySerializer(category, data=request.data)
-            serializer.is_valid(raise_exception=True)
+        category = get_object_or_404(Category, category_id=pk)
+        serializer = CategorySerializer(category, data=request.data)
+        if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        else:
-            return Response("Category not found", status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        categories = Category.objects.filter(category_id=pk)
-        if categories.exists():
-            category = categories.first()
-            category.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response("Category not found", status=status.HTTP_404_NOT_FOUND)
-
+        category = get_object_or_404(Category, category_id=pk)
+        category.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ReviewListCreateAPIView(APIView):

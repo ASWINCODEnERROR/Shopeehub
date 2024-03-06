@@ -2,6 +2,7 @@ from rest_framework import serializers
 from productapp.models import Product ,Category,Product, ProductImage,ProductVariant,Review,Rating
 from orders.models import Order
 from django.contrib.auth.models import User
+from django.db.models import Avg
 
 
    
@@ -29,10 +30,14 @@ class ProductSerializer(serializers.ModelSerializer):
         write_only=True
     )
     reviews = ReviewSerializer(many=True, read_only=True)
+    rating = serializers.SerializerMethodField()
+    
+    sku = serializers.CharField(max_length=50)
+    availability = serializers.BooleanField(default=True)
 
     class Meta:
         model = Product
-        fields = ["id", "name", "description", "slug", "inventory", "size","price", "product_image", "uploaded_images", "upload_images", "reviews"]
+        fields = ["id", "name", "description", "slug", "inventory", "size","price", "product_image", "uploaded_images", "upload_images", "reviews","rating","sku","availability"]
 
     def get_product_image(self, obj):
         if obj.image:
@@ -41,10 +46,17 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         upload_images = validated_data.pop("upload_images")
+        sku = validated_data.pop("sku")
+        availability = validated_data.pop("availability")
         product = Product.objects.create(**validated_data)
         for image in upload_images:
             new_product_image = ProductImage.objects.create(product=product, image=image)
         return product
+    
+    def get_rating(self,obj):
+        ratings = Rating.objects.filter(product_id=obj.id)
+        average_rating = ratings.aggregate(Avg('rating'))['rating__avg']
+        return average_rating
 
 class ProductVariantSerializer(serializers.ModelSerializer):
     class Meta:

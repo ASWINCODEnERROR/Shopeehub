@@ -37,8 +37,8 @@ class Product(models.Model):
     color = models.CharField(max_length=50, blank=True, null=True) 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    # created
-     
+    sku = models.CharField(max_length=50, unique=True, default='') 
+    availability = models.BooleanField(default=True)
    
     @property
     def  offer_price(self):
