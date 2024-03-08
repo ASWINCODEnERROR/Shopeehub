@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'cartapp',
     'productapp',
     'orders',
+    'payments',
     
 
     'rest_framework',
@@ -214,27 +215,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'authentication.User'
 
+# for payment
+STRIPE_PUBLISHABLE_KEY ='pk_test_51OrHJUSBmHynfRISfBwuAmZKOVmTsici9mdQopGSsJaIaAZdBMb3VnO8UCveKLnzMIWRpNtYPZBgFKT9BYNTokA100xftLvLWj'
+STRIPE_SECRET_KEY ='sk_test_51OrHJUSBmHynfRIS7TIAqUnZeyQt1PhQf5DXA5BAIBE7orwffsT00kylFjH45JLiLMuhlBmT2ZV4tvGih5oYkI4Q0024yUlRXm'
 
-
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# LOG_FILE = os.path.join(BASE_DIR, 'logging.txt')
-
-# LOGGING ={
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#        'file': {
-#            'level': 'DEBUG',
-#            'class': 'logging.FileHandler',
-#            'filename': LOG_FILE,
-#            'formatter': 'verbose',
-#        },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file'],
-#             'level': 'DEBUG',
-#             'propagate': True,
-#         },
-#     },
-# }
+# STRIPE_TEST_PUBLISHABLE_KEY = 'pk_test_51OrHJUSBmHynfRISfBwuAmZKOVmTsici9mdQopGSsJaIaAZdBMb3VnO8UCveKLnzMIWRpNtYPZBgFKT9BYNTokA100xftLvLWj'
+# STRIPE_TEST_SECRET_KEY = 'sk_test_51OrHJUSBmHynfRIS7TIAqUnZeyQt1PhQf5DXA5BAIBE7orwffsT00kylFjH45JLiLMuhlBmT2ZV4tvGih5oYkI4Q0024yUlRXm'

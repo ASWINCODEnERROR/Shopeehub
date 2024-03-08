@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny,IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializer import ChangePasswordSerializer, UserSerializer
 from django.contrib.auth.models import User
@@ -41,7 +41,8 @@ class LoginView(APIView):
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
-
+        print("username" , username )
+        print("password" , password )
         user = authenticate(request, username=username, password=password)
         if user:
             refresh = RefreshToken.for_user(user)
@@ -55,7 +56,7 @@ class LoginView(APIView):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser])
 def get_registered_users(request):
     registered_users = User.objects.all()
     serializer = UserSerializer(registered_users, many=True)
