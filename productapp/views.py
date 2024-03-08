@@ -140,7 +140,7 @@ class ApiCategories(APIView):
     permission_classes = [IsAuthenticated]  
 
     def get_permissions(self):
-        if self.request.method in ['POST', 'PUT', 'DELETE']:
+        if self.request.method in ['POST']:
             return [IsAdminOrSuperAdmin()]
         return super().get_permissions()
 
